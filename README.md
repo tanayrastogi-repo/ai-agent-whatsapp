@@ -286,3 +286,75 @@ source .venv/bin/activate  # Or .venv\Scripts\activate on Windows
   - Send "Ask John to finish the report by Friday" - Task should be created
   - Send "How many tasks does John have?" - Should query tasks
   - Check SQLite database for persisted tasks
+
+### Prerequisites
+1. **Twilio Account**: Sign up at https://www.twilio.com/try-twilio
+2. **WhatsApp Account**: Install WhatsApp on your phone
+3. **Ngrok Account**: Sign up at https://ngrok.com for a free account
+
+### Step-by-Step Implementation
+
+#### 1. Install and Configure Ngrok
+```bash
+# Download ngrok (macOS)
+brew install ngrok
+
+# OR download for other platforms from https://ngrok.com/download
+
+# Connect your ngrok account (get authtoken from https://dashboard.ngrok.com/get-started/your-authtoken)
+ngrok config add-authtoken <your-authtoken>
+```
+
+#### 2. Join Twilio WhatsApp Sandbox
+1. Go to https://console.twilio.com/us1/develop/sms/try-it-out/whatsapp-learn
+2. Click **Confirm** to acknowledge the terms
+3. Send `join <sandbox-code>` to `whatsapp:+14155238886` from your phone
+   - Example: If your sandbox code is "XY123ABC", send: `join XY123ABC`
+4. You'll receive a confirmation: "You have successfully subscribed to WhatsApp notifications!"
+
+#### 3. Update .env with Twilio Credentials
+```bash
+# Get these from https://console.twilio.com/
+TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+TWILIO_AUTH_TOKEN=your_auth_token_here
+TWILIO_PHONE_NUMBER=+14155238886  # Sandbox number
+```
+
+#### 4. Run the Application
+```bash
+# Terminal 1: Start FastAPI server
+uv run uvicorn main:app --reload --port 8000
+
+# Terminal 2: Start ngrok tunnel
+ngrok http 8000
+
+# Note the ngrok URL (e.g., https://abc123xyz.ngrok.io)
+```
+
+#### 5. Configure Twilio Sandbox Webhook
+1. Go to https://console.twilio.com/us1/develop/sms/try-it-out/whatsapp-learn
+2. Click **Sandbox settings**
+3. In **When a message comes in**, enter your ngrok URL + `/webhook`
+   - Example: `https://abc123xyz.ngrok.io/webhook`
+4. Click **Save**
+
+#### 6. Test End-to-End Messaging
+Send WhatsApp messages to `whatsapp:+14155238886`:
+
+**Test Task Creation:**
+```
+Ask John to finish the report by Friday
+```
+Expected response: "Done! I've created a task for John: 'finish the report' due [date]."
+
+**Test Task Query:**
+```
+How many tasks does John have?
+```
+Expected response: "Found 1 task for John: 'finish the report' due [date]"
+
+**Test Clarification:**
+```
+Hello!
+```
+Expected response: "I'm a task management assistant. You can: ..."

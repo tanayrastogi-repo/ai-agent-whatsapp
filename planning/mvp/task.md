@@ -143,7 +143,7 @@ Expected response: "I'm a task management assistant. You can: ..."
 - [x] Test end-to-end WhatsApp messaging
 - [x] Verify task creation via WhatsApp
 - [x] Verify task queries via WhatsApp
-- [ ] **Verify Phase 5 Completion:** Send test WhatsApp messages, update README.md with Phase 5 summary
+- [x] **Verify Phase 5 Completion:** Send test WhatsApp messages, update README.md with Phase 5 summary
 
 ## Optional Enhancements (Out of Scope for PoC)
 
