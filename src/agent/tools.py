@@ -8,9 +8,25 @@ from datetime import datetime
 from typing import Any
 
 from langchain_core.tools import tool
+from langchain_community.tools import DuckDuckGoSearchRun
+from langchain_ollama import ChatOllama
 from sqlalchemy.orm import Session
 
 from src.db.models import Task
+
+
+# Daytona tool singleton
+_daytona_tool = None
+
+
+def get_daytona_tool():
+    """Get or create DaytonaDataAnalysisTool singleton."""
+    global _daytona_tool
+    if _daytona_tool is None:
+        from langchain_daytona_data_analysis import DaytonaDataAnalysisTool
+
+        _daytona_tool = DaytonaDataAnalysisTool()
+    return _daytona_tool
 
 
 @tool
