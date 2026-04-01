@@ -1,7 +1,6 @@
 """Tests for the full agent graph."""
 
 
-
 class TestAgentGraph:
     """Tests for the compiled agent graph."""
 
@@ -36,7 +35,11 @@ class TestAgentInvocation:
             }
         )
 
-        assert "response" in result
+        messages = result.get("messages", [])
+        assert len(messages) >= 2
+        response_msg = messages[-1]
+        assert response_msg.type == "ai"
+        assert response_msg.content
 
     def test_agent_handles_clarify_message(self):
         """Test agent handles greeting/clarification."""
@@ -52,5 +55,8 @@ class TestAgentInvocation:
             }
         )
 
-        assert "response" in result
-        assert result["response"] is not None
+        messages = result.get("messages", [])
+        assert len(messages) >= 2
+        response_msg = messages[-1]
+        assert response_msg.type == "ai"
+        assert response_msg.content

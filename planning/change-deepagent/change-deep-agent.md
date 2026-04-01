@@ -37,7 +37,7 @@ flowchart TD
     end
 
     subgraph Agent["LangChain DeepAgent<br/>(src/agent/graph.py)"]
-        LLM["LLM: qwen3.5:cloud<br/>→ llama3.2:3b fallback"]
+        LLM["LLM: qwen3.5:397b-cloud<br/>→ llama3.2:3b fallback"]
         
         subgraph Tools["Tools"]
             T1["create_task"]
@@ -180,7 +180,7 @@ OLLAMA_API_KEY=your_ollama_cloud_key      # From ollama.com/cloud
 
 | Model | Environment | Base URL | Purpose |
 |-------|-------------|----------|---------|
-| `qwen3.5:cloud` | Cloud (primary) | `https://api.ollama.cloud/v1` | Main LLM with tool calling |
+| `qwen3.5:397b-cloud` | Cloud (primary) | `https://api.ollama.cloud/v1` | Main LLM with tool calling |
 | `llama3.2:3b` | Local (fallback) | `http://localhost:11434` | Fallback when cloud unavailable |
 
 ---

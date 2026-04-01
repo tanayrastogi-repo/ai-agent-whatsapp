@@ -1,42 +1,14 @@
-"""LangChain DeepAgent for task management via WhatsApp."""
-
 import os
-
+import sys
+import httpx
 from langchain_ollama import ChatOllama
-
 from deepagents import create_deep_agent
+from langchain_core.messages import HumanMessage
+from dotenv import load_dotenv
+load_dotenv()
 
-from src.agent.tools import create_task, get_tasks, web_search, data_analysis
-
-TOOLS = [create_task, get_tasks, web_search, data_analysis]
-
-
-def get_model() -> ChatOllama:
-    """Get LLM with cloud fallback to local.
-
-    Tries to use qwen3.5:397b-cloud from Ollama Cloud.
-    Falls back to local llama3.2:3b if cloud fails.
-
-    Returns:
-        ChatOllama instance configured with appropriate model.
-    """
-    ollama_api_key = os.environ.get("OLLAMA_API_KEY")
-
-    if ollama_api_key:
-        try:
-            return ChatOllama(
-                model="qwen3.5:397b-cloud",
-                base_url="https://ollama.com/",
-                api_key=ollama_api_key,  # type: ignore[call-arg]
-                temperature=0,
-            )
-        except Exception as cloud_error:
-            print(f"Cloud model failed: {cloud_error}, falling back to local")
-
-    return ChatOllama(
-        model="llama3.2:3b",
-        temperature=0,
-    )
+sys.path.insert(0, "/home/tanay/projects/ai-agent-whatsapp")
+from src.agent.graph import app
 
 
 SYSTEM_PROMPT = """You are a helpful WhatsApp assistant that can assist users with various tasks.
@@ -74,21 +46,37 @@ You have access to the following tools:
 Respond helpfully and accurately to user requests."""
 
 
-def create_whatsapp_agent():
-    """Create the WhatsApp DeepAgent.
-
-    Returns:
-        Compiled DeepAgent graph.
-    """
-    model = get_model()
-
-    agent = create_deep_agent(
-        model=model,
-        tools=TOOLS,
-        system_prompt=SYSTEM_PROMPT,
-    )
-
-    return agent
+OLLAMA_API_KEY = os.getenv("OLLAMA_API_KEY")
+if not OLLAMA_API_KEY:
+    print("❌ OLLAMA_API_KEY not set in environment")
+    exit(1)
 
 
-app = create_whatsapp_agent()
+
+
+# # Create the OLLAMA chat model instance
+# model = ChatOllama(
+#         model="qwen3.5:397b-cloud",
+#         base_url="https://ollama.com/",
+#         api_key=OLLAMA_API_KEY,
+#         temperature=0,
+# )
+
+# # Create the DeepAgent with the OLLAMA model and system prompt
+# app = create_deep_agent(
+#     model=model,
+#     system_prompt=SYSTEM_PROMPT,
+# )
+
+
+# Run the agent
+result = app.invoke(
+    {
+        "messages": [HumanMessage(content="Hello there!")],
+        "intent": None,
+        "tool_result": None,
+        "response": None,
+    }
+)
+print("Agent response:")
+print(result)

@@ -33,10 +33,11 @@ def test_create_task_flow():
         config={"callbacks": [get_tracer()]},
     )
 
-    print(f"Response: {result.get('response')}")
-    print(f"Intent: {result.get('intent')}")
-    print(f"Tool result: {result.get('tool_result')}")
-    assert result.get("response") is not None
+    messages = result.get("messages", [])
+    response_msg = messages[-1]
+    print(f"Response: {response_msg.content}")
+    assert response_msg.type == "ai"
+    assert response_msg.content
 
 
 def test_query_tasks_flow():
@@ -54,10 +55,11 @@ def test_query_tasks_flow():
         config={"callbacks": [get_tracer()]},
     )
 
-    print(f"Response: {result.get('response')}")
-    print(f"Intent: {result.get('intent')}")
-    print(f"Tool result: {result.get('tool_result')}")
-    assert result.get("response") is not None
+    messages = result.get("messages", [])
+    response_msg = messages[-1]
+    print(f"Response: {response_msg.content}")
+    assert response_msg.type == "ai"
+    assert response_msg.content
 
 
 def test_clarify_flow():
@@ -71,8 +73,11 @@ def test_clarify_flow():
         config={"callbacks": [get_tracer()]},
     )
 
-    print(f"Response: {result.get('response')}")
-    assert result.get("response") is not None
+    messages = result.get("messages", [])
+    response_msg = messages[-1]
+    print(f"Response: {response_msg.content}")
+    assert response_msg.type == "ai"
+    assert response_msg.content
 
 
 if __name__ == "__main__":

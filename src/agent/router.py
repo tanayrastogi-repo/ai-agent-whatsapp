@@ -1,4 +1,10 @@
-"""Router module for classifying user intent."""
+"""Router module for classifying user intent.
+
+DEPRECATED: This module is no longer used. The DeepAgent now uses LLM-driven
+intent classification through tool calling. This file is retained for
+reference and potential rollback purposes only.
+
+"""
 
 from typing import Any
 

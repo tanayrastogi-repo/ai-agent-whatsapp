@@ -1,12 +1,11 @@
 """LangChain DeepAgent for task management via WhatsApp."""
-
 import os
-
 from langchain_ollama import ChatOllama
-
 from deepagents import create_deep_agent
-
 from src.agent.tools import create_task, get_tasks, web_search, data_analysis
+from dotenv import load_dotenv
+load_dotenv()
+
 
 TOOLS = [create_task, get_tasks, web_search, data_analysis]
 
@@ -26,7 +25,6 @@ def get_model() -> ChatOllama:
         try:
             return ChatOllama(
                 model="qwen3.5:397b-cloud",
-                base_url="https://ollama.com/",
                 api_key=ollama_api_key,  # type: ignore[call-arg]
                 temperature=0,
             )

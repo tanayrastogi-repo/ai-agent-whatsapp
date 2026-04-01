@@ -1,7 +1,12 @@
 # Agent Guidelines for ai-agent
 
 ## Project Overview
-WhatsApp Task Extraction & Management Agent using LangChain/LangGraph with FastAPI webhooks, SQLite database, and Twilio WhatsApp integration.
+WhatsApp AI Agent using LangChain DeepAgent with FastAPI webhooks, SQLite database, and Twilio WhatsApp integration.
+
+### Capabilities
+1. **Task Management** - Create and query tasks in SQLite database
+2. **Web Search** - Search the web for current information (DuckDuckGo)
+3. **Data Analysis** - Execute Python code for calculations and visualizations (Daytona sandbox)
 
 ---
 
@@ -213,12 +218,13 @@ ai-agent/
 ├── .env                     # Environment variables (gitignore)
 ├── src/                     # Source code
 │   ├── __init__.py
-│   ├── agent/               # LangGraph agent logic
+│   ├── agent/               # LangChain DeepAgent logic
 │   │   ├── __init__.py
-│   │   ├── graph.py         # StateGraph with nodes
-│   │   ├── router.py        # Intent classification
+│   │   ├── graph.py         # DeepAgent creation (create_deep_agent)
+│   │   ├── graph_deepagent.py  # Backup of current implementation
+│   │   ├── router.py        # DEPRECATED - Intent classification (retained for reference)
 │   │   ├── state.py         # AgentState TypedDict, Intent enum
-│   │   ├── tools.py         # create_task, get_tasks tools
+│   │   ├── tools.py         # Tools: create_task, get_tasks, web_search, data_analysis
 │   │   └── langsmith_config.py
 │   └── db/                  # Database layer
 │       ├── __init__.py
@@ -236,14 +242,18 @@ ai-agent/
 ## Dependencies
 
 ### Core (add via `uv add`)
+- **deepagents** - DeepAgent framework for planning and tool calling
 - **langchain**, **langgraph** - Agent framework
 - **langchain-ollama** - Ollama LLM integration
+- **langchain-community** - Community tools (DuckDuckGo)
+- **langchain-daytona-data-analysis** - Data analysis sandbox
 - **sqlalchemy** - Database ORM
 - **fastapi**, **uvicorn** - Web server
 - **python-multipart** - Form data parsing for FastAPI
 - **pydantic** - Data validation
 - **twilio** - WhatsApp integration
 - **python-dotenv** - Environment variable loading
+- **ddgs** - DuckDuckGo search
 
 ### Dev (add via `uv add --dev`)
 - **pytest**, **pytest-asyncio** - Testing with async support
@@ -255,12 +265,25 @@ ai-agent/
 ## Environment Variables
 Create a `.env` file (never commit):
 ```
+# OLLAMA CONFIGURATION
 OLLAMA_BASE_URL=http://localhost:11434
 OLLAMA_MODEL=llama3.1
+
+# OLLAMA CLOUD (primary model for DeepAgent)
+OLLAMA_API_KEY=your_ollama_cloud_key
+
+# DAYTONA (data analysis sandbox)
+DAYTONA_API_KEY=your_daytona_key
+
+# DATABASE
 DATABASE_URL=sqlite:///./tasks.db
+
+# TWILIO
 TWILIO_AUTH_TOKEN=xxx
 TWILIO_ACCOUNT_SID=xxx
 TWILIO_PHONE_NUMBER=xxx
+
+# LANGSMITH
 LANGSMITH_TRACING=true
 LANGSMITH_API_KEY=xxx
 LANGSMITH_PROJECT=whatsapp-task-agent
@@ -268,9 +291,31 @@ LANGSMITH_PROJECT=whatsapp-task-agent
 
 ---
 
+## Models
+
+The agent uses model fallback:
+- **Primary**: `qwen3.5:397b-cloud` (Ollama Cloud) - requires `OLLAMA_API_KEY`
+- **Fallback**: `llama3.2:3b` (local) - used when cloud is unavailable
+
+---
+
 ## Key Patterns
 
-### LangGraph Agent Invocation
+### DeepAgent Creation
+```python
+from deepagents import create_deep_agent
+from src.agent.tools import create_task, get_tasks, web_search, data_analysis
+
+TOOLS = [create_task, get_tasks, web_search, data_analysis]
+
+agent = create_deep_agent(
+    model=ChatOllama(model="qwen3.5:397b-cloud"),
+    tools=TOOLS,
+    system_prompt="You are a helpful WhatsApp assistant...",
+)
+```
+
+### DeepAgent Invocation
 ```python
 from langchain_core.messages import HumanMessage
 from langchain_core.tracers import LangChainTracer
@@ -280,7 +325,7 @@ result = app.invoke(
     {"messages": [HumanMessage(content=message)]},
     config={"callbacks": [tracer]},
 )
-response = result.get("response", "Default fallback message")
+response = result.get("messages", [])[-1].content
 ```
 
 ### FastAPI TwiML Response
@@ -304,6 +349,19 @@ try:
 finally:
     db.close()
 ```
+
+---
+
+## Tools
+
+The DeepAgent has access to four tools:
+
+| Tool | Function |
+|------|----------|
+| `create_task` | Creates a task in the SQLite database |
+| `get_tasks` | Queries tasks with optional filters |
+| `web_search` | Searches the web using DuckDuckGo |
+| `data_analysis` | Executes Python code in Daytona sandbox |
 
 ---
 

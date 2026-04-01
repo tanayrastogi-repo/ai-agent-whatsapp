@@ -9,7 +9,6 @@ from typing import Any
 
 from langchain_core.tools import tool
 from langchain_community.tools import DuckDuckGoSearchRun
-from langchain_ollama import ChatOllama
 from sqlalchemy.orm import Session
 
 from src.db.models import Task
@@ -135,3 +134,51 @@ def get_tasks(
         }
     finally:
         db.close()
+
+
+@tool
+def web_search(query: str) -> str:
+    """Search the web for current information.
+
+    Use this tool when users ask about current events, facts,
+    or information that requires up-to-date web results.
+
+    Args:
+        query: The search query string.
+
+    Returns:
+        Search results as a formatted string with snippets.
+    """
+    search = DuckDuckGoSearchRun()
+    return search.invoke(query)
+
+
+@tool
+def data_analysis(code: str) -> str:
+    """Execute Python code for data analysis and visualization.
+
+    Use this tool when users ask to:
+    - Perform mathematical calculations
+    - Analyze data
+    - Create charts and visualizations
+    - Run Python scripts
+
+    The tool runs in a secure sandboxed environment and can generate
+    plots as image artifacts.
+
+    Args:
+        code: Python code to execute. Can include:
+        - Mathematical expressions
+        - Data manipulation (pandas)
+        - Visualization (matplotlib, seaborn)
+        - File operations
+
+    Returns:
+        Execution results including any text output or artifact descriptions.
+    """
+    tool = get_daytona_tool()
+    try:
+        result = tool.invoke({"data_analysis_python_code": code})
+        return str(result)
+    except Exception as e:
+        return f"Error executing code: {str(e)}"

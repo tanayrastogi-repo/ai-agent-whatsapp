@@ -9,6 +9,7 @@ dependencies = [
     "deepagents>=0.4.12",
     "fastapi>=0.135.2",
     "langchain>=1.2.13",
+    "langchain-community>=0.4.1",
     "langchain-daytona-data-analysis>=0.1.1",
     "langchain-ollama>=1.0.1",
     "langchain-openai>=1.1.12",
